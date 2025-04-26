@@ -1,8 +1,14 @@
 package lexicalAnalyzer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class LexicalAnalyzer {
+
+    private ArrayList<String> symbolsTable = new ArrayList<>();
+    private Queue<String>     tokensQueue  = new LinkedList<>();
 
     public LexicalAnalyzer() { }
 
@@ -11,12 +17,27 @@ public class LexicalAnalyzer {
 
         HashMap<Character, Boolean> symbols = this.symbolsAvailable();
 
-        for(int i = 0; i < instruction.length() ; i++ ){
+        for(int i = 0; i < instruction.length() ; i++){
             if(symbols.get(instruction.charAt(i)) == null){
                 throw new RuntimeException("Caractere inválido: '" + instruction.charAt(i) + "' (Unicode: " + (int)instruction.charAt(i) + ")");
             }
         }
 
+    }
+
+    public void insertNonStopWords(String instruction){
+        HashMap<String, Boolean> stopWords = this.stopWordsList();
+        
+        String[] instructions = instruction.split(" ");
+
+        for (int i = 0; i < instructions.length; i++) {
+            if(stopWords.get(instructions[i]) == null){
+                symbolsTable.add(instructions[i]);
+                tokensQueue.add(instructions[i]);
+            }
+        }
+
+        System.out.println("fila: " + tokensQueue);
     }
 
     public boolean similarityWithDifferenceTwoCharacters(String word1, String word2){
@@ -25,8 +46,12 @@ public class LexicalAnalyzer {
         word2 = this.removeAccentIfExists(word2.toLowerCase());
     
         int minLen = Math.min(word1.length(), word2.length());
-        int diff = Math.abs(word1.length() - word2.length()); 
-    
+        int diff   = Math.abs(word1.length() - word2.length()); 
+        
+        if(diff > 2){
+            return false;
+        }
+
         for (int i = 0; i < minLen; i++) {
             if (word1.charAt(i) != word2.charAt(i)) {
                 diff++;
@@ -79,7 +104,7 @@ public class LexicalAnalyzer {
 
     }
 
-    public HashMap<Character, Boolean> stopWordsList(){
+    public HashMap<String, Boolean> stopWordsList(){
         HashMap<String, Boolean> stopWords = new HashMap<>();
         String[] words = {"a", "à", "ao", "aos", "aquela", "aquelas", "aquele", "aqueles", "aquilo", "as", "às", "até", "com", "como", "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "do", "dos", "e", "é", "ela", "elas", "ele", "eles", "em", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses", "esta", "está", "estamos", "estão", "estar", "estas", "estava", "estavam", "estávamos", "este", "esteja", "estejam", "estejamos", "estes", "esteve", "estive", "estivemos", "estiver", "estivera", "estiveram", "estivéramos", "estiverem", "estivermos", "estivesse", "estivessem", "estivéssemos", "estou", "eu", "foi", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem", "fôssemos", "fui", "há", "haja", "hajam", "hajamos", "hão", "havemos", "haver", "hei", "houve", "houvemos", "houver", "houvera", "houverá", "houveram", "houvéramos", "houverão", "houverei", "houverem", "houveremos", "houveria", "houveriam", "houveríamos", "houvermos", "houvesse", "houvessem", "houvéssemos", "isso", "isto", "já", "lhe", "lhes", "mais", "mas", "me", "mesmo", "meu", "meus", "minha", "minhas", "muito", "na", "não", "nas", "nem", "no", "nos", "nós", "nossa", "nossas", "nosso", "nossos", "num", "numa", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "qual", "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "sem", "ser", "será", "serão", "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas", "também", "te", "tem", "tém", "temos", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei", "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive", "tivemos", "tiver", "tivera", "tiveram", "tivéramos", "tiverem", "tivermos", "tivesse", "tivessem", "tivéssemos", "tu", "tua", "tuas", "um", "uma", "você", "vocês", "vos"};
        
@@ -88,5 +113,13 @@ public class LexicalAnalyzer {
         }
 
         return stopWords;
+    }
+
+    public ArrayList<String> getSymbolsTable(){
+        return this.symbolsTable;
+    }
+    
+    public Queue<String> getTokensQueue(){
+        return this.tokensQueue;
     }
 }
