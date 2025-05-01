@@ -8,47 +8,86 @@ import java.util.Queue;
 public class LexicalAnalyzer {
 
     private ArrayList<String> symbolsTable = new ArrayList<>();
-    private Queue<String>     tokensQueue  = new LinkedList<>();
+    private Queue<String> tokensQueue = new LinkedList<>();
 
-    public LexicalAnalyzer() { }
+    public LexicalAnalyzer() {
+    }
 
     public void lexicalVerification(String instruction) {
-        instruction = instruction.replace(" ", "");
+        String instructionAux = instruction.replace(" ", "");
 
         HashMap<Character, Boolean> symbols = this.symbolsAvailable();
 
-        for(int i = 0; i < instruction.length() ; i++){
-            if(symbols.get(instruction.charAt(i)) == null){
-                throw new RuntimeException("Caractere inválido: '" + instruction.charAt(i) + "' (Unicode: " + (int)instruction.charAt(i) + ")");
+        for (int i = 0; i < instructionAux.length(); i++) {
+            if (symbols.get(instructionAux.charAt(i)) == null) {
+                throw new RuntimeException("Caractere inválido: '" + instructionAux.charAt(i) + "' (Unicode: "
+                        + (int) instructionAux.charAt(i) + ")");
             }
         }
 
+        this.insertWordsIntoSymbolsTable(instruction);
+        this.insertTokensIntoTokensQueue(instruction);
+
     }
 
-    public void insertNonStopWords(String instruction){
+    private void insertTokensIntoTokensQueue(String instruction) {
         HashMap<String, Boolean> stopWords = this.stopWordsList();
+
+        String[] instructions = instruction.split(" ");
+        for (int i = 0; i < instructions.length; i++) {
+            if (stopWords.get(instructions[i]) == null) {
+                if(instructions[i] != ""){
+                    this.tokensQueue.add(instructions[i]);
+                }
+            }
+        }
+
+        System.out.println(this.tokensQueue);
         
+    }
+
+    private void insertWordsIntoSymbolsTable(String instruction) {
+        instruction = instruction.replaceAll("\\d+", "");
+        
+        HashMap<String, Boolean> stopWords = this.stopWordsList();
+        HashMap<Character, Boolean> separators = this.separators();
+
         String[] instructions = instruction.split(" ");
 
         for (int i = 0; i < instructions.length; i++) {
-            if(stopWords.get(instructions[i]) == null){
-                symbolsTable.add(instructions[i]);
-                tokensQueue.add(instructions[i]);
+            if (stopWords.get(instructions[i]) == null) {
+                String partition = "";
+                for (int j = 0; j < instructions[i].length(); j++) {
+                    
+                    if (separators.get(instructions[i].charAt(j)) != null && separators.get(instructions[i].charAt(j))) {
+                        if (partition != "") {
+                            this.symbolsTable.add(partition);
+                            partition = "";
+                        }
+                    } else {
+                        partition += instructions[i].charAt(j);
+                    }
+
+                }
+                if (partition != "") {
+                    this.symbolsTable.add(partition);
+                }
             }
         }
 
-        System.out.println("fila: " + tokensQueue);
+        System.out.println(this.symbolsTable);
+
     }
 
-    public boolean similarityWithDifferenceTwoCharacters(String word1, String word2){
+    public boolean similarityWithDifferenceTwoCharacters(String word1, String word2) {
 
         word1 = this.removeAccentIfExists(word1.toLowerCase());
         word2 = this.removeAccentIfExists(word2.toLowerCase());
-    
+
         int minLen = Math.min(word1.length(), word2.length());
-        int diff   = Math.abs(word1.length() - word2.length()); 
-        
-        if(diff > 2){
+        int diff = Math.abs(word1.length() - word2.length());
+
+        if (diff > 2) {
             return false;
         }
 
@@ -57,15 +96,15 @@ public class LexicalAnalyzer {
                 diff++;
             }
         }
-    
+
         return diff <= 2;
     }
 
-    private String removeAccentIfExists(String word){
-        
+    private String removeAccentIfExists(String word) {
+
         for (int i = 0; i < word.length(); i++) {
             char letterModify = this.characterAnAccent(word.charAt(i));
-            if(letterModify != ' '){
+            if (letterModify != ' ') {
                 word = word.replace(word.charAt(i), letterModify);
             }
         }
@@ -73,28 +112,46 @@ public class LexicalAnalyzer {
         return word;
     }
 
-    private char characterAnAccent(char letter){
-       
-        if (letter == 'à' || letter == 'á' || letter == 'â' || letter == 'ã' ){
+    private char characterAnAccent(char letter) {
+
+        if (letter == 'à' || letter == 'á' || letter == 'â' || letter == 'ã') {
             return 'a';
-        }else if(letter == 'ç'){
+        } else if (letter == 'ç') {
             return 'c';
-        }else if(letter == 'é' || letter == 'ê'){
+        } else if (letter == 'é' || letter == 'ê') {
             return 'e';
-        }else if(letter == 'í'){
+        } else if (letter == 'í') {
             return 'i';
-        }else if(letter == 'ó' || letter == 'ô' || letter == 'õ'){
+        } else if (letter == 'ó' || letter == 'ô' || letter == 'õ') {
             return 'o';
-        }else if(letter == 'ú'){
+        } else if (letter == 'ú') {
             return 'u';
         }
-        
+
         return ' ';
     }
 
-    private HashMap<Character, Boolean> symbolsAvailable(){
+    private HashMap<Character, Boolean> separators() {
+        HashMap<Character, Boolean> separators = new HashMap<>();
+        char[] validSeparators = { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';',
+                '<', '=', '>', '?', '@', 'ª', 'º', '°', '¨', '§' };
+
+        for (char separator : validSeparators) {
+            separators.put(separator, true);
+        }
+
+        return separators;
+    }
+
+    private HashMap<Character, Boolean> symbolsAvailable() {
         HashMap<Character, Boolean> symbols = new HashMap<>();
-        char[] validSymbols = {'!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/','0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', '´', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~','À', 'Á', 'Â', 'Ã', 'Ç', 'É', 'Ê', 'Í', 'Ó', 'Ô', 'Õ', 'Ú', 'à', 'á', 'â', 'ã', 'ç', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ª', 'º', '°', '¨', '§'};
+        char[] validSymbols = { '!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', '0', '1',
+                '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[',
+                '\\', ']', '^', '_', '`', '´', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', 'À', 'Á', 'Â', 'Ã', 'Ç',
+                'É', 'Ê', 'Í', 'Ó', 'Ô', 'Õ', 'Ú', 'à', 'á', 'â', 'ã', 'ç', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ª', 'º',
+                '°', '¨', '§' };
 
         for (char symbol : validSymbols) {
             symbols.put(symbol, true);
@@ -104,10 +161,28 @@ public class LexicalAnalyzer {
 
     }
 
-    public HashMap<String, Boolean> stopWordsList(){
+    public HashMap<String, Boolean> stopWordsList() {
         HashMap<String, Boolean> stopWords = new HashMap<>();
-        String[] words = {"a", "à", "ao", "aos", "aquela", "aquelas", "aquele", "aqueles", "aquilo", "as", "às", "até", "com", "como", "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "do", "dos", "e", "é", "ela", "elas", "ele", "eles", "em", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses", "esta", "está", "estamos", "estão", "estar", "estas", "estava", "estavam", "estávamos", "este", "esteja", "estejam", "estejamos", "estes", "esteve", "estive", "estivemos", "estiver", "estivera", "estiveram", "estivéramos", "estiverem", "estivermos", "estivesse", "estivessem", "estivéssemos", "estou", "eu", "foi", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem", "fôssemos", "fui", "há", "haja", "hajam", "hajamos", "hão", "havemos", "haver", "hei", "houve", "houvemos", "houver", "houvera", "houverá", "houveram", "houvéramos", "houverão", "houverei", "houverem", "houveremos", "houveria", "houveriam", "houveríamos", "houvermos", "houvesse", "houvessem", "houvéssemos", "isso", "isto", "já", "lhe", "lhes", "mais", "mas", "me", "mesmo", "meu", "meus", "minha", "minhas", "muito", "na", "não", "nas", "nem", "no", "nos", "nós", "nossa", "nossas", "nosso", "nossos", "num", "numa", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "qual", "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "sem", "ser", "será", "serão", "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas", "também", "te", "tem", "tém", "temos", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei", "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive", "tivemos", "tiver", "tivera", "tiveram", "tivéramos", "tiverem", "tivermos", "tivesse", "tivessem", "tivéssemos", "tu", "tua", "tuas", "um", "uma", "você", "vocês", "vos"};
-       
+        String[] words = { "a", "à", "ao", "aos", "aquela", "aquelas", "aquele", "aqueles", "aquilo", "as", "às", "até",
+                "com", "como", "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "do", "dos", "e", "é",
+                "ela", "elas", "ele", "eles", "em", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses",
+                "esta", "está", "estamos", "estão", "estar", "estas", "estava", "estavam", "estávamos", "este",
+                "esteja", "estejam", "estejamos", "estes", "esteve", "estive", "estivemos", "estiver", "estivera",
+                "estiveram", "estivéramos", "estiverem", "estivermos", "estivesse", "estivessem", "estivéssemos",
+                "estou", "eu", "foi", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem",
+                "fôssemos", "fui", "há", "haja", "hajam", "hajamos", "hão", "havemos", "haver", "hei", "houve",
+                "houvemos", "houver", "houvera", "houverá", "houveram", "houvéramos", "houverão", "houverei",
+                "houverem", "houveremos", "houveria", "houveriam", "houveríamos", "houvermos", "houvesse", "houvessem",
+                "houvéssemos", "isso", "isto", "já", "lhe", "lhes", "mais", "mas", "me", "mesmo", "meu", "meus",
+                "minha", "minhas", "muito", "na", "não", "nas", "nem", "no", "nos", "nós", "nossa", "nossas", "nosso",
+                "nossos", "num", "numa", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "qual",
+                "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "sem", "ser", "será", "serão",
+                "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas",
+                "também", "te", "tem", "tém", "temos", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
+                "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive",
+                "tivemos", "tiver", "tivera", "tiveram", "tivéramos", "tiverem", "tivermos", "tivesse", "tivessem",
+                "tivéssemos", "tu", "tua", "tuas", "um", "uma", "você", "vocês", "vos" };
+
         for (String word : words) {
             stopWords.put(word, true);
         }
@@ -115,11 +190,11 @@ public class LexicalAnalyzer {
         return stopWords;
     }
 
-    public ArrayList<String> getSymbolsTable(){
+    public ArrayList<String> getSymbolsTable() {
         return this.symbolsTable;
     }
-    
-    public Queue<String> getTokensQueue(){
+
+    public Queue<String> getTokensQueue() {
         return this.tokensQueue;
     }
 }
