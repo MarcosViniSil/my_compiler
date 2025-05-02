@@ -14,6 +14,9 @@ public class LexicalAnalyzer {
     }
 
     public void lexicalVerification(String instruction) {
+        if(instruction.replaceAll(" ", "") == ""){
+            return;
+        }
         String instructionAux = instruction.replace(" ", "");
 
         HashMap<Character, Boolean> symbols = this.symbolsAvailable();
@@ -31,52 +34,102 @@ public class LexicalAnalyzer {
     }
 
     private void insertTokensIntoTokensQueue(String instruction) {
-        HashMap<String, Boolean> stopWords = this.stopWordsList();
-
         String[] instructions = instruction.split(" ");
         for (int i = 0; i < instructions.length; i++) {
-            if (stopWords.get(instructions[i]) == null) {
-                if(instructions[i] != ""){
-                    this.tokensQueue.add(instructions[i]);
+            if (this.isWordNotStopWord(instructions[i])) {
+
+                if(this.isInstructionContainNumber(instructions[i])){
+                    this.separateNumbers(instructions[i]);
+                }else{
+                    this.separateText(instructions[i]);
                 }
+
             }
         }
 
         System.out.println(this.tokensQueue);
-        
+
     }
 
     private void insertWordsIntoSymbolsTable(String instruction) {
         instruction = instruction.replaceAll("\\d+", "");
-        
-        HashMap<String, Boolean> stopWords = this.stopWordsList();
-        HashMap<Character, Boolean> separators = this.separators();
 
         String[] instructions = instruction.split(" ");
 
         for (int i = 0; i < instructions.length; i++) {
-            if (stopWords.get(instructions[i]) == null) {
-                String partition = "";
-                for (int j = 0; j < instructions[i].length(); j++) {
-                    
-                    if (separators.get(instructions[i].charAt(j)) != null && separators.get(instructions[i].charAt(j))) {
-                        if (partition != "") {
-                            this.symbolsTable.add(partition);
-                            partition = "";
-                        }
-                    } else {
-                        partition += instructions[i].charAt(j);
-                    }
-
-                }
-                if (partition != "") {
-                    this.symbolsTable.add(partition);
-                }
+            if (this.isWordNotStopWord(instructions[i])) {
+                this.insertOnlyWordsOnSymbolsTable(instructions[i]);
             }
         }
 
         System.out.println(this.symbolsTable);
 
+    }
+
+    private void insertOnlyWordsOnSymbolsTable(String instruction){
+        String partition = "";
+        for (int j = 0; j < instruction.length(); j++) {
+
+            if (this.isCharSeparator(instruction.charAt(j))) {
+                if (partition != "") {
+                    this.symbolsTable.add(partition);
+                    partition = "";
+                }
+            } else {
+                partition += instruction.charAt(j);
+            }
+
+        }
+        if (partition != "") {
+            this.symbolsTable.add(partition);
+        }
+    }
+
+    private void separateText(String instruction) {
+        String partition = "";
+
+        for (int j = 0; j < instruction.length(); j++) {
+
+            if (this.isCharSeparator(instruction.charAt(j))) {
+                if (partition != "") {
+                    this.tokensQueue.add(partition);
+                    this.tokensQueue.add(String.valueOf(instruction.charAt(j)));
+                    partition = "";
+                } else {
+                    this.tokensQueue.add(String.valueOf(instruction.charAt(j)));
+                }
+            } else {
+                partition += instruction.charAt(j);
+            }
+
+        }
+        if (partition != "") {
+            this.tokensQueue.add(partition);
+        }
+
+    }
+
+    private void separateNumbers(String instructions) {
+        int j = 0;
+        while (j < instructions.length()) {
+            char c = instructions.charAt(j);
+
+            if (Character.isDigit(c)) {
+                StringBuilder number = new StringBuilder();
+                while (j < instructions.length() && Character.isDigit(instructions.charAt(j))) {
+                    number.append(instructions.charAt(j));
+                    j++;
+                }
+                this.tokensQueue.add(number.toString());
+            } else {
+                StringBuilder text = new StringBuilder();
+                while (j < instructions.length() && !Character.isDigit(instructions.charAt(j))) {
+                    text.append(instructions.charAt(j));
+                    j++;
+                }
+                this.separateText(text.toString());
+            }
+        }
     }
 
     public boolean similarityWithDifferenceTwoCharacters(String word1, String word2) {
@@ -110,6 +163,17 @@ public class LexicalAnalyzer {
         }
 
         return word;
+    }
+    private boolean isCharSeparator(char candidate){
+        HashMap<Character, Boolean> separators = this.separators();
+        return separators.get(candidate) != null && separators.get(candidate);
+    }
+    private boolean isWordNotStopWord(String word){
+        HashMap<String, Boolean> stopWords = this.stopWordsList();
+        return stopWords.get(word) == null;
+    }    
+    private boolean isInstructionContainNumber(String instruction){
+        return instruction.matches(".*\\d.*");
     }
 
     private char characterAnAccent(char letter) {
