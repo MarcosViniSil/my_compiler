@@ -14,7 +14,7 @@ public class LexicalAnalyzer {
     }
 
     public void lexicalVerification(String instruction) {
-        
+
         if(instruction.replaceAll(" ", "") == ""){
             return;
         }
@@ -230,20 +230,21 @@ public class LexicalAnalyzer {
     public HashMap<String, Boolean> stopWordsList() {
         HashMap<String, Boolean> stopWords = new HashMap<>();
         String[] words = { "a", "à", "ao", "aos", "aquela", "aquelas", "aquele", "aqueles", "aquilo", "as", "às", "até",
-                 "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "e", "é",
-                "ela", "elas", "ele", "eles", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses",
-                "esteja", "estejam", "estejamos", "esteve", "estive", "estivemos", "estiver", "estivera",
+                "com", "como", "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "do", "dos", "e", "é",
+                "ela", "elas", "ele", "eles", "em", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses",
+                "esta", "está", "estamos", "estavam", "estávamos", "este",
+                "esteja", "estejam", "estejamos", "estes", "esteve", "estive", "estivemos", "estiver", "estivera",
                 "estiveram", "estivéramos", "estiverem", "estivermos", "estivesse", "estivessem", "estivéssemos",
-                "estou", "eu", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem",
+                "estou", "eu", "foi", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem",
                 "fôssemos", "fui", "há", "haja", "hajam", "hajamos", "hão", "havemos", "haver", "hei", "houve",
                 "houvemos", "houver", "houvera", "houverá", "houveram", "houvéramos", "houverão", "houverei",
                 "houverem", "houveremos", "houveria", "houveriam", "houveríamos", "houvermos", "houvesse", "houvessem",
                 "houvéssemos", "isso", "isto", "já", "lhe", "lhes", "mais", "mas", "me", "mesmo", "meu", "meus",
                 "minha", "minhas", "muito", "na", "não", "nas", "nem", "no", "nos", "nós", "nossa", "nossas", "nosso",
-                "nossos", "num", "numa", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "qual",
-                "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "sem", "ser", "será", "serão",
+                "nossos", "num", "numa", "para", "pela", "pelas", "pelo", "pelos", "por",
+                "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos","ser", "será", "serão",
                 "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas",
-                "também", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
+                "também", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
                 "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive",
                 "tivemos", "tiver", "tivera", "tiveram", "tivéramos", "tiverem", "tivermos", "tivesse", "tivessem",
                 "tivéssemos", "tu", "tua", "tuas", "um", "uma", "você", "vocês", "vos" };

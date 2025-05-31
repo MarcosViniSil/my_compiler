@@ -7,20 +7,38 @@ public class syntacticAnalyzer {
 
     private Queue<String> tokensQueue;
     private String[] keyWords = { "Qual", "tem", "Qual", "possui", "Qual", "está", "Qual", "foi", "Quais", "estão",
-            "Quais",
-            "iniciam", "Quais", "contém", "O", "formato", "O", "documento", "O", "ano", "O", "arquivo",
-            "O", "título", "No", "máximo", "O", "foi", "O", "está" };
+                                  "Quais","iniciam", "Quais", "contém", "O", "formato", "O", "documento", "O", "ano", "O", "arquivo",
+                                  "O", "título", "No", "máximo", "O", "foi", "O", "está" };
 
-    private String[] subset1 = { "tem", "possui", "está", "foi" };
+    private String[] subset1 = { "tem", "possui", "está", "criado" };
     private String[] subset2 = { "estão", "iniciam", "contém" };
     private String[] subset3 = { "formato", "documento", "ano", "arquivo", "título", "foi", "está" };
-    private String[] subset4 = {  "máximo" };
+    private String[] subset4 = { "máximo" };
 
-    public SyntacticAnalyzer(){}
+    private String[] rule1 = { "Qual", "documento", "tem", "<>", "?" }; 
+    private String[] rule2 = { "Qual", "documento", "possui", "<>", "?" };
+    private String[] rule3 = { "Qual", "documento", "está", "<>", "?" };
+    private String[] rule4 = { "Qual", "documento", "criado", "<>", "?" };
 
-    // public SyntacticAnalyzer(Queue<String> tokensQueue) {
-    //     this.tokensQueue = tokensQueue;
-    // }
+    private String[] rule5 = { "Quais", "documentos", "estão", "<>", "?" };
+    private String[] rule6 = { "Quais", "documentos", "iniciam", "<>", "?" };
+    private String[] rule7 = { "Quais", "documentos", "contém", "<>", "?" };
+
+    private String[] rule8 =  { "O", "formato", "<>" };
+    private String[] rule9 =  { "O", "documento", "<>" };
+    private String[] rule10 = { "O", "ano", "<>" };
+    private String[] rule11 = { "O", "arquivo", "precisa", "conter", "<>" };
+    private String[] rule12 = { "O", "título", "<>" };
+    private String[] rule13 = { "O", "<>", "foi", "criado", "em", "<>" };
+    private String[] rule14 = { "O", "<>", "está", "<>" };
+    private String[] rule15 = { "No", "máximo", "<>", "<>" };
+
+    
+     public syntacticAnalyzer(){}
+
+     public syntacticAnalyzer(Queue<String> tokensQueue) {
+        this.tokensQueue = tokensQueue;
+     }
 
     public void indentifyPhrase(String instruction) {
         instruction = instruction.trim().replaceAll("\\s+", " ");
@@ -33,35 +51,86 @@ public class syntacticAnalyzer {
 
         String typeInstruction = this.isWordStruction(firstWord);
         if (typeInstruction == " ") {
-            System.out.println("Não entendi1");
+            System.out.println("Não entendi");
             return;
         }
         int indexSubSet = this.getIndexSubSet(typeInstruction);
-        
-        int indexRuleActivate = this.getIntructionRule(instruction,indexSubSet);
-        if(indexRuleActivate == -1){
-            System.out.println("Não entendi2");
+
+        int indexRuleActivate = this.getIntructionRule(instruction, indexSubSet);
+        if (indexRuleActivate == -1) {
+            System.out.println("Não entendi");
             return;
         }
 
-        System.out.println(this.getRuleActivate(indexSubSet, indexRuleActivate));
+        String[] a = this.getRuleActivate(indexSubSet, indexRuleActivate);
+        for (String string : a) {
+            System.out.println(string);
+        }   
+
 
     }
 
-    public String getRuleActivate(int indexSubSet, int indexRuleActivate){
+    public String[] getRuleActivate(int indexSubSet, int indexRuleActivate) {
         String[] keyWords = this.getSubSet(indexSubSet);
         String typeRule = this.getTypeRule(indexSubSet);
-        return typeRule+" "+keyWords[indexRuleActivate];
+
+        if (typeRule.toLowerCase().equals("qual") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("tem")) {
+            return rule1;
+        } else if (typeRule.toLowerCase().equals("qual")
+                && keyWords[indexRuleActivate].toLowerCase().equals("possui")) {
+            return rule2;
+        } else if (typeRule.toLowerCase().equals("qual") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("está")) {
+            return rule3;
+        } else if (typeRule.toLowerCase().equals("qual")
+                && keyWords[indexRuleActivate].toLowerCase().equals("criado")) {
+            return rule4;
+        } else if (typeRule.toLowerCase().equals("quais")
+                && keyWords[indexRuleActivate].toLowerCase().equals("estão")) {
+            return rule5;
+        } else if (typeRule.toLowerCase().equals("quais")
+                && keyWords[indexRuleActivate].toLowerCase().equals("iniciam")) {
+            return rule6;
+        } else if (typeRule.toLowerCase().equals("quais")
+                && keyWords[indexRuleActivate].toLowerCase().equals("contém")) {
+            return rule7;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("formato")) {
+            return rule8;
+        } else if (typeRule.toLowerCase().equals("o")
+                && keyWords[indexRuleActivate].toLowerCase().equals("documento")) {
+            return rule9;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("ano")) {
+            return rule10;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("arquivo")) {
+            return rule11;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("título")) {
+            return rule12;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("foi")) {
+            return rule13;
+        } else if (typeRule.toLowerCase().equals("o") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("está")) {
+            return rule14;
+        } else if (typeRule.toLowerCase().equals("no") 
+                && keyWords[indexRuleActivate].toLowerCase().equals("máximo")) {
+            return rule15;
+       }
+        return null;
     }
 
-    public String getTypeRule(int indexSubSet){
-        if(indexSubSet == 1){
+    public String getTypeRule(int indexSubSet) {
+        if (indexSubSet == 1) {
             return "Qual";
-        }else if(indexSubSet == 2){
+        } else if (indexSubSet == 2) {
             return "quais";
-        }else if(indexSubSet == 3){
+        } else if (indexSubSet == 3) {
             return "O";
-        }else if(indexSubSet == 4){
+        } else if (indexSubSet == 4) {
             return "No";
         }
         return "";
@@ -106,17 +175,21 @@ public class syntacticAnalyzer {
             return 4;
         }
         return -1;
-        
+
     }
 
     public String isWordStruction(String word) {
-        if((word.toLowerCase().startsWith("qual") || word.toLowerCase().contains("qual"))  && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "qual")  ){
+        if ((word.toLowerCase().startsWith("qual") || word.toLowerCase().contains("qual"))
+                && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "qual")) {
             return "Qual";
-        }else if((word.toLowerCase().startsWith("quai") || word.toLowerCase().contains("quai")) && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "Quais")){
+        } else if ((word.toLowerCase().startsWith("quai") || word.toLowerCase().contains("quai"))
+                && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "Quais")) {
             return "Quais";
-        }else if(word.toLowerCase().contains("n") && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "No")){
+        } else if (word.toLowerCase().contains("n")
+                && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "No")) {
             return "No";
-        }else if(word.toLowerCase().contains("o") && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "O")){
+        } else if (word.toLowerCase().contains("o")
+                && LexicalAnalyzer.similarityWithDifferenceTwoCharacters(word, "O")) {
             return "O";
         }
 
@@ -124,4 +197,3 @@ public class syntacticAnalyzer {
     }
 
 }
-
