@@ -14,6 +14,7 @@ public class LexicalAnalyzer {
     }
 
     public void lexicalVerification(String instruction) {
+        
         if(instruction.replaceAll(" ", "") == ""){
             return;
         }
@@ -34,6 +35,7 @@ public class LexicalAnalyzer {
     }
 
     private void insertTokensIntoTokensQueue(String instruction) {
+
         String[] instructions = instruction.split(" ");
         for (int i = 0; i < instructions.length; i++) {
             if (this.isWordNotStopWord(instructions[i])) {
@@ -132,10 +134,10 @@ public class LexicalAnalyzer {
         }
     }
 
-    public boolean similarityWithDifferenceTwoCharacters(String word1, String word2) {
+    public static boolean similarityWithDifferenceTwoCharacters(String word1, String word2) {
 
-        word1 = this.removeAccentIfExists(word1.toLowerCase());
-        word2 = this.removeAccentIfExists(word2.toLowerCase());
+        word1 = LexicalAnalyzer.removeAccentIfExists(word1.toLowerCase()).toLowerCase();
+        word2 = LexicalAnalyzer.removeAccentIfExists(word2.toLowerCase()).toLowerCase();
 
         int minLen = Math.min(word1.length(), word2.length());
         int diff = Math.abs(word1.length() - word2.length());
@@ -153,10 +155,10 @@ public class LexicalAnalyzer {
         return diff <= 2;
     }
 
-    private String removeAccentIfExists(String word) {
+    public static String removeAccentIfExists(String word) {
 
         for (int i = 0; i < word.length(); i++) {
-            char letterModify = this.characterAnAccent(word.charAt(i));
+            char letterModify = LexicalAnalyzer.characterAnAccent(word.charAt(i));
             if (letterModify != ' ') {
                 word = word.replace(word.charAt(i), letterModify);
             }
@@ -176,7 +178,7 @@ public class LexicalAnalyzer {
         return instruction.matches(".*\\d.*");
     }
 
-    private char characterAnAccent(char letter) {
+    public static char characterAnAccent(char letter) {
 
         if (letter == 'à' || letter == 'á' || letter == 'â' || letter == 'ã') {
             return 'a';
@@ -228,12 +230,11 @@ public class LexicalAnalyzer {
     public HashMap<String, Boolean> stopWordsList() {
         HashMap<String, Boolean> stopWords = new HashMap<>();
         String[] words = { "a", "à", "ao", "aos", "aquela", "aquelas", "aquele", "aqueles", "aquilo", "as", "às", "até",
-                "com", "como", "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "do", "dos", "e", "é",
-                "ela", "elas", "ele", "eles", "em", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses",
-                "esta", "está", "estamos", "estão", "estar", "estas", "estava", "estavam", "estávamos", "este",
-                "esteja", "estejam", "estejamos", "estes", "esteve", "estive", "estivemos", "estiver", "estivera",
+                 "da", "das", "de", "dela", "delas", "dele", "deles", "depois", "e", "é",
+                "ela", "elas", "ele", "eles", "entre", "era", "eram", "éramos", "essa", "essas", "esse", "esses",
+                "esteja", "estejam", "estejamos", "esteve", "estive", "estivemos", "estiver", "estivera",
                 "estiveram", "estivéramos", "estiverem", "estivermos", "estivesse", "estivessem", "estivéssemos",
-                "estou", "eu", "foi", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem",
+                "estou", "eu", "fomos", "for", "fora", "foram", "fôramos", "forem", "formos", "fosse", "fossem",
                 "fôssemos", "fui", "há", "haja", "hajam", "hajamos", "hão", "havemos", "haver", "hei", "houve",
                 "houvemos", "houver", "houvera", "houverá", "houveram", "houvéramos", "houverão", "houverei",
                 "houverem", "houveremos", "houveria", "houveriam", "houveríamos", "houvermos", "houvesse", "houvessem",
@@ -242,7 +243,7 @@ public class LexicalAnalyzer {
                 "nossos", "num", "numa", "o", "os", "ou", "para", "pela", "pelas", "pelo", "pelos", "por", "qual",
                 "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "sem", "ser", "será", "serão",
                 "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas",
-                "também", "te", "tem", "tém", "temos", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
+                "também", "tenha", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
                 "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive",
                 "tivemos", "tiver", "tivera", "tiveram", "tivéramos", "tiverem", "tivermos", "tivesse", "tivessem",
                 "tivéssemos", "tu", "tua", "tuas", "um", "uma", "você", "vocês", "vos" };
