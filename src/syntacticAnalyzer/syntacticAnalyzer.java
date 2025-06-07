@@ -54,7 +54,7 @@ public class syntacticAnalyzer {
         String[] tokens = this.tokensQueue.toString()
                 .replace("[", "")
                 .replace("]", "")
-                .replace("?", "") // apenas o caractere desejado
+                .replace("?", "") 
                 .trim()
                 .split(",");
         if (tokens.length == 1) {
