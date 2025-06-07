@@ -1,53 +1,76 @@
 package syntacticAnalyzer;
 
 import lexicalAnalyzer.LexicalAnalyzer;
+import syntacticTree.*;
 import java.util.Queue;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.Map;
 
 public class syntacticAnalyzer {
 
     private Queue<String> tokensQueue;
+    private ArrayList<String> symbolsTable;
+    private SyntacticTree source;
+
     private String[] keyWords = { "Qual", "tem", "Qual", "possui", "Qual", "está", "Qual", "foi", "Quais", "estão",
-                                  "Quais","iniciam", "Quais", "contém", "O", "formato", "O", "documento", "O", "ano", "O", "arquivo",
-                                  "O", "título", "No", "máximo", "O", "foi", "O", "está" };
+            "Quais", "iniciam", "Quais", "contém", "O", "formato", "O", "documento", "O", "ano", "O", "arquivo",
+            "O", "título", "No", "máximo", "O", "foi", "O", "está" };
 
     private String[] subset1 = { "tem", "possui", "está", "criado" };
     private String[] subset2 = { "estão", "iniciam", "contém" };
     private String[] subset3 = { "formato", "documento", "ano", "arquivo", "título", "foi", "está" };
     private String[] subset4 = { "máximo" };
 
-    private String[] rule1 = { "Qual", "documento", "tem", "<>", "?" }; 
-    private String[] rule2 = { "Qual", "documento", "possui", "<>", "?" };
-    private String[] rule3 = { "Qual", "documento", "está", "<>", "?" };
-    private String[] rule4 = { "Qual", "documento", "criado", "<>", "?" };
+    private String[] rule1 = { "Qual", "tem", "<palavra>" };
+    private String[] rule2 = { "Qual", "possui", "<palavra>" };
+    private String[] rule3 = { "Qual", "está", "<palavra>" };
+    private String[] rule4 = { "Qual", "criado", "<inteiro>" };
 
-    private String[] rule5 = { "Quais", "documentos", "estão", "<>", "?" };
-    private String[] rule6 = { "Quais", "documentos", "iniciam", "<>", "?" };
-    private String[] rule7 = { "Quais", "documentos", "contém", "<>", "?" };
+    private String[] rule5 = { "Quais", "estão", "<formato>" };
+    private String[] rule6 = { "Quais", "iniciam", "<letra>" };
+    private String[] rule7 = { "Quais", "contém", "<palavra>" };
 
-    private String[] rule8 =  { "O", "formato", "<>" };
-    private String[] rule9 =  { "O", "documento", "<>" };
-    private String[] rule10 = { "O", "ano", "<>" };
-    private String[] rule11 = { "O", "arquivo", "precisa", "conter", "<>" };
-    private String[] rule12 = { "O", "título", "<>" };
-    private String[] rule13 = { "O", "<>", "foi", "criado", "em", "<>" };
-    private String[] rule14 = { "O", "<>", "está", "<>" };
-    private String[] rule15 = { "No", "máximo", "<>", "<>" };
+    private String[] answer1 = { "formato", "<formato>" };
+    private String[] answer2 = { "tamanho", "<palavra>" };
+    private String[] answer3 = { "pasta", "<palavra>" };
+    private String[] answer4 = { "ano", "<palavra>" };
+    private String[] answer5 = { "título", "<palavra>" };
+    private String[] answer6 = { "inicia", "<letra>" };
+    private String[] answer7 = { "palavra", "<palavra>" };
 
-    
-     public syntacticAnalyzer(){}
+    public syntacticAnalyzer() {
+    }
 
-     public syntacticAnalyzer(Queue<String> tokensQueue) {
+    public syntacticAnalyzer(Queue<String> tokensQueue, ArrayList<String> symbolsTable) {
         this.tokensQueue = tokensQueue;
-     }
+        this.symbolsTable = symbolsTable;
+        this.source = new SyntacticTree("Inicio-arvore");
+    }
 
-    public void indentifyPhrase(String instruction) {
-        instruction = instruction.trim().replaceAll("\\s+", " ");
-        if (instruction.length() == 0) {
+    public void execute() {
+        String[] tokens = this.tokensQueue.toString()
+                .replace("[", "")
+                .replace("]", "")
+                .replace("?", "") // apenas o caractere desejado
+                .trim()
+                .split(",");
+        if (tokens.length == 1) {
+            System.out.println("Não entendi");
             return;
         }
+        for (int i = 0; i < tokens.length; i++) {
+            tokens[i] = tokens[i].trim();
+        }
 
-        String[] instructionParts = instruction.split(" ");
-        String firstWord = instructionParts[0];
+        this.indentifyPhrase(tokens);
+    }
+
+    public void indentifyPhrase(String[] instruction) {
+
+        String firstWord = instruction[0];
 
         String typeInstruction = this.isWordStruction(firstWord);
         if (typeInstruction == " ") {
@@ -62,25 +85,218 @@ public class syntacticAnalyzer {
             return;
         }
 
-        String[] a = this.getRuleActivate(indexSubSet, indexRuleActivate);
-        for (String string : a) {
-            System.out.println(string);
-        }   
+        String[] ruleActivate = this.getRuleActivate(indexSubSet, indexRuleActivate);
 
+        String[] instructionConverted = getInstructionConverted(ruleActivate, instruction);
+        if (instructionConverted == null) {
+            return;
+        }
+        this.insertValuesIntoSyntacticTree(ruleActivate, instructionConverted);
 
+    }
+
+    public String[] getInstructionConverted(String[] ruleActivated, String[] struction) {
+        String[] instructionCompleted = { ruleActivated[0], ruleActivated[1], "" };
+
+        if (ruleActivated.length == 3) {
+            String sizeAndExtension = "";
+            if (ruleActivated[0].equalsIgnoreCase("qual") && ruleActivated[1].equalsIgnoreCase("possui")) {
+                String triggerNonStopWord = ruleActivated[1];
+                for (int i = 0; i < struction.length; i++) {
+                    if (struction[i].equalsIgnoreCase(triggerNonStopWord)) {
+
+                        if (i + 2 < struction.length) {
+
+                            String size = struction[i + 1];
+                            String base = struction[i + 2];
+                            if (isValidType("inteiro", size)) {
+                                sizeAndExtension += struction[i + 1];
+                            } else {
+                                String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                if (nonFinalWord == "") {
+                                    return null;
+                                }
+                                sizeAndExtension += nonFinalWord;
+                            }
+
+                            if (isValidType("palavra", base)) {
+                                sizeAndExtension += struction[i + 2];
+                            } else {
+                                String nonFinalWord = getNonFinalWordMissing("palavra");
+                                if (nonFinalWord == "") {
+                                    return null;
+                                }
+                                sizeAndExtension += nonFinalWord;
+                            }
+                        } else {
+                            if (i + 2 >= struction.length) {
+
+                                String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                if (nonFinalWord == "") {
+                                    return null;
+                                }
+                                sizeAndExtension += nonFinalWord;
+
+                                nonFinalWord = getNonFinalWordMissing("palavra");
+                                if (nonFinalWord == "") {
+                                    return null;
+                                }
+                                sizeAndExtension += nonFinalWord;
+                            } else if (i + 1 < struction.length) {
+                                if (isValidType("palavra", struction[i + 1])) {// has base
+                                    String nonFinalWord = getNonFinalWordMissing("palavra");
+                                    if (nonFinalWord == "") {
+                                        return null;
+                                    }
+                                    sizeAndExtension += nonFinalWord;
+                                    sizeAndExtension += struction[i + 1];
+                                } else if (isValidType("inteiro", struction[i + 1])) {// has value
+                                    String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                    if (nonFinalWord == "") {
+                                        return null;
+                                    }
+                                    sizeAndExtension += struction[i + 1];
+                                    sizeAndExtension += nonFinalWord;
+
+                                }
+                            }
+                        }
+                    }
+                }
+                instructionCompleted[2] = sizeAndExtension;
+            }
+
+            else {
+                String triggerNonStopWord = ruleActivated[1];
+                for (int i = 0; i < struction.length; i++) {
+                    if (struction[i].equalsIgnoreCase(triggerNonStopWord)) {
+                        String type = ruleActivated[2].replace("<", "").replace(">", "");
+                        if (i + 1 < struction.length) {
+                            if (isValidType(type, struction[i + 1])) {
+                                instructionCompleted[2] = struction[i + 1];
+
+                            } else {
+                                String nonFinalWord = getNonFinalWordMissing(type);
+                                if (nonFinalWord == "") {
+                                    return null;
+                                }
+                                instructionCompleted[2] = nonFinalWord;
+                            }
+                        } else {
+                            String nonFinalWord = getNonFinalWordMissing(type);
+                            if (nonFinalWord == "") {
+                                return null;
+                            }
+                            instructionCompleted[2] = nonFinalWord;
+                        }
+
+                    }
+                }
+            }
+        }
+
+        return instructionCompleted;
+
+    }
+
+    public void insertValuesIntoSyntacticTree(String[] ruleStructure, String[] ruleConverted) {
+        for (int i = 0; i < ruleStructure.length; i++) {
+            if (ruleStructure[i].startsWith("<") && ruleStructure[i].endsWith(">")) {
+                SyntacticTree nonTerminal = new SyntacticTree(ruleStructure[i]);
+                nonTerminal.addChild(new SyntacticTree(ruleConverted[i]));
+                this.source.addChild(nonTerminal);
+            } else {
+                String part = ruleStructure[i];
+                this.source.addChild(new SyntacticTree(part));
+            }
+
+        }
+
+        this.source.print("");
+    }
+
+    public String getNonFinalWordMissing(String type) {
+        Scanner sc = new Scanner(System.in);
+        String value = "";
+        do {
+            System.out.printf("não reconheci qual %s, pode me informar o valor de %s ? s para sair: ", type, type);
+            value = sc.nextLine();
+            if (value.equalsIgnoreCase("s")) {
+                return "";
+            }
+            String[] valueUser = value.split(" ");
+            String valueWithoutStopWord = "";
+
+            for (String stringUser : valueUser) {
+                if (LexicalAnalyzer.isWordNotStopWord(stringUser)) {
+                    valueWithoutStopWord += stringUser + " ";
+                }
+            }
+
+            if (valueUser.length == 1 && isValidType(type, valueWithoutStopWord)) {
+                return value;
+            }
+            String answerUser = getNonFinalWordFromAnswerUser(type, valueWithoutStopWord.split(" "));
+            if (answerUser != "") {
+                return answerUser;
+            }
+            System.out.println("Desculpe, ");
+
+        } while (true);
+
+    }
+
+    public String getNonFinalWordFromAnswerUser(String type, String[] answerUser) {
+        if (answerUser.length == 1) {
+            if (isValidType(type, answerUser[0])) {
+                return answerUser[0];
+            } else {
+                return "";
+            }
+        }
+
+        for (int i = 0; i < answerUser.length; i++) {
+            if (LexicalAnalyzer.similarityWithDifferenceTwoCharacters(type, answerUser[i])) {
+                if (i + 1 >= answerUser.length) {
+                    return "";
+                }
+                if (isValidType(type, answerUser[i + 1])) {
+                    return answerUser[i + 1];
+                } else {
+                    return "";
+                }
+            }
+        }
+        return "";
+    }
+
+    public String recognizeType(String word) {
+        if (word.matches("\\d+"))
+            return "inteiro";
+        if (word.matches("\\d+(\\.\\d+)?"))
+            return "numero";
+        if (word.matches("[a-zA-Z]{1}"))
+            return "letra";
+        if (word.matches("[a-zA-Z]+"))
+            return "palavra";
+        if (word.matches("pdf|docx|txt|html"))
+            return "formato";
+        if (word.equals("?") || word.equals("."))
+            return "pontuacao";
+        return "desconhecido";
     }
 
     public String[] getRuleActivate(int indexSubSet, int indexRuleActivate) {
         String[] keyWords = this.getSubSet(indexSubSet);
         String typeRule = this.getTypeRule(indexSubSet);
 
-        if (typeRule.toLowerCase().equals("qual") 
+        if (typeRule.toLowerCase().equals("qual")
                 && keyWords[indexRuleActivate].toLowerCase().equals("tem")) {
             return rule1;
         } else if (typeRule.toLowerCase().equals("qual")
                 && keyWords[indexRuleActivate].toLowerCase().equals("possui")) {
             return rule2;
-        } else if (typeRule.toLowerCase().equals("qual") 
+        } else if (typeRule.toLowerCase().equals("qual")
                 && keyWords[indexRuleActivate].toLowerCase().equals("está")) {
             return rule3;
         } else if (typeRule.toLowerCase().equals("qual")
@@ -95,31 +311,7 @@ public class syntacticAnalyzer {
         } else if (typeRule.toLowerCase().equals("quais")
                 && keyWords[indexRuleActivate].toLowerCase().equals("contém")) {
             return rule7;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("formato")) {
-            return rule8;
-        } else if (typeRule.toLowerCase().equals("o")
-                && keyWords[indexRuleActivate].toLowerCase().equals("documento")) {
-            return rule9;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("ano")) {
-            return rule10;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("arquivo")) {
-            return rule11;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("título")) {
-            return rule12;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("foi")) {
-            return rule13;
-        } else if (typeRule.toLowerCase().equals("o") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("está")) {
-            return rule14;
-        } else if (typeRule.toLowerCase().equals("no") 
-                && keyWords[indexRuleActivate].toLowerCase().equals("máximo")) {
-            return rule15;
-       }
+        }
         return null;
     }
 
@@ -136,13 +328,42 @@ public class syntacticAnalyzer {
         return "";
     }
 
-    public int getIntructionRule(String instruction, int indexSubSet) {
+    public boolean isUnitValid(String unit) {
+        if (unit.equalsIgnoreCase("kb")) {
+            return true;
+        } else if (unit.equalsIgnoreCase("mb")) {
+            return true;
+        } else if (unit.equalsIgnoreCase("gb")) {
+            return true;
+        } else if (unit.equalsIgnoreCase("b")) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isValidType(String type, String value) {
+        switch (type) {
+            case "palavra":
+                return value.matches("[a-zA-Z0-9]+");
+            case "numero":
+                return value.matches("\\d+(\\.\\d+)?");
+            case "inteiro":
+                return value.matches("\\d+");
+            case "formato":
+                return value.matches("(pdf|docx|doc|txt|xml|json|xls)");
+            case "letra":
+                return value.matches("[a-zA-Z]");
+            default:
+                return false;
+        }
+    }
+
+    public int getIntructionRule(String[] instruction, int indexSubSet) {
         String[] keyWords = this.getSubSet(indexSubSet);
 
-        String[] instructionParts = instruction.split(" ");
-        for (int i = 1; i < instructionParts.length; i++) {
+        for (int i = 1; i < instruction.length; i++) {
             for (int j = 0; j < keyWords.length; j++) {
-                if (LexicalAnalyzer.similarityWithDifferenceTwoCharacters(instructionParts[i], keyWords[j])) {
+                if (LexicalAnalyzer.similarityWithDifferenceTwoCharacters(instruction[i], keyWords[j])) {
                     return j;
                 }
             }
