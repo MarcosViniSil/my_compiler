@@ -8,7 +8,7 @@ public class App {
         LexicalAnalyzer lexical = new LexicalAnalyzer();
         try {
 
-            lexical.lexicalVerification("Quais documentos contém teste ?");
+            lexical.lexicalVerification(" Quais  documentos contém tempo ?");
             syntacticAnalyzer syntacticAnalyzer = new syntacticAnalyzer(lexical.getTokensQueue(),lexical.getSymbolsTable());
             syntacticAnalyzer.execute();
         } catch (Exception e) {

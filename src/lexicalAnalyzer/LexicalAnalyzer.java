@@ -15,7 +15,7 @@ public class LexicalAnalyzer {
 
     public void lexicalVerification(String instruction) {
 
-        if(instruction.replaceAll(" ", "") == ""){
+        if (instruction.replaceAll(" ", "") == "") {
             return;
         }
         String instructionAux = instruction.replace(" ", "");
@@ -40,15 +40,14 @@ public class LexicalAnalyzer {
         for (int i = 0; i < instructions.length; i++) {
             if (isWordNotStopWord(instructions[i])) {
 
-                if(this.isInstructionContainNumber(instructions[i])){
+                if (this.isInstructionContainNumber(instructions[i])) {
                     this.separateNumbers(instructions[i]);
-                }else{
+                } else {
                     this.separateText(instructions[i]);
                 }
 
             }
         }
-
 
     }
 
@@ -63,10 +62,9 @@ public class LexicalAnalyzer {
             }
         }
 
-
     }
 
-    private void insertOnlyWordsOnSymbolsTable(String instruction){
+    private void insertOnlyWordsOnSymbolsTable(String instruction) {
         String partition = "";
         for (int j = 0; j < instruction.length(); j++) {
 
@@ -75,7 +73,7 @@ public class LexicalAnalyzer {
                     this.symbolsTable.add(partition);
                     this.symbolsTable.add(String.valueOf(instruction.charAt(j)));
                     partition = "";
-                }else{
+                } else {
                     this.symbolsTable.add(String.valueOf(instruction.charAt(j)));
                 }
             } else {
@@ -168,15 +166,18 @@ public class LexicalAnalyzer {
 
         return word;
     }
-    private boolean isCharSeparator(char candidate){
+
+    private boolean isCharSeparator(char candidate) {
         HashMap<Character, Boolean> separators = this.separators();
         return separators.get(candidate) != null && separators.get(candidate);
     }
-    public static boolean isWordNotStopWord(String word){
+
+    public static boolean isWordNotStopWord(String word) {
         HashMap<String, Boolean> stopWords = stopWordsList();
         return stopWords.get(word) == null;
-    }    
-    private boolean isInstructionContainNumber(String instruction){
+    }
+
+    private boolean isInstructionContainNumber(String instruction) {
         return instruction.matches(".*\\d.*");
     }
 
@@ -244,7 +245,7 @@ public class LexicalAnalyzer {
                 "houvéssemos", "isso", "isto", "já", "lhe", "lhes", "mais", "mas", "me", "mesmo", "meu", "meus",
                 "minha", "minhas", "muito", "na", "não", "nas", "nem", "no", "nos", "nós", "nossa", "nossas", "nosso",
                 "nossos", "num", "numa", "para", "pela", "pelas", "pelo", "pelos", "por",
-                "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos","ser", "será", "serão",
+                "quando", "que", "quem", "são", "se", "seja", "sejam", "sejamos", "ser", "será", "serão",
                 "serei", "seremos", "seria", "seriam", "seríamos", "seu", "seus", "só", "somos", "sou", "sua", "suas",
                 "também", "tenham", "tenhamos", "tenho", "terá", "terão", "terei",
                 "teremos", "teria", "teriam", "teríamos", "teu", "teus", "teve", "tinha", "tinham", "tínhamos", "tive",

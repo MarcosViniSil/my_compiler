@@ -24,10 +24,10 @@ public class syntacticAnalyzer {
     private String[] subset3 = { "formato", "documento", "ano", "arquivo", "título", "foi", "está" };
     private String[] subset4 = { "máximo" };
 
-    private String[] rule1 = { "Qual", "tem", "<palavra>" };
+    private String[] rule1 = { "Qual", "tem", "<titulo>" };
     private String[] rule2 = { "Qual", "possui", "<palavra>" };
-    private String[] rule3 = { "Qual", "está", "<palavra>" };
-    private String[] rule4 = { "Qual", "criado", "<inteiro>" };
+    private String[] rule3 = { "Qual", "está", "<pasta>" };
+    private String[] rule4 = { "Qual", "criado", "<ano>" };
 
     private String[] rule5 = { "Quais", "estão", "<formato>" };
     private String[] rule6 = { "Quais", "iniciam", "<letra>" };
@@ -35,9 +35,9 @@ public class syntacticAnalyzer {
 
     private String[] answer1 = { "formato", "<formato>" };
     private String[] answer2 = { "tamanho", "<palavra>" };
-    private String[] answer3 = { "pasta", "<palavra>" };
-    private String[] answer4 = { "ano", "<palavra>" };
-    private String[] answer5 = { "título", "<palavra>" };
+    private String[] answer3 = { "pasta", "<pasta>" };
+    private String[] answer4 = { "ano", "<ano>" };
+    private String[] answer5 = { "título", "<titulo>" };
     private String[] answer6 = { "inicia", "<letra>" };
     private String[] answer7 = { "palavra", "<palavra>" };
 
@@ -54,7 +54,7 @@ public class syntacticAnalyzer {
         String[] tokens = this.tokensQueue.toString()
                 .replace("[", "")
                 .replace("]", "")
-                .replace("?", "") 
+                .replace("?", "")
                 .trim()
                 .split(",");
         if (tokens.length == 1) {
@@ -91,8 +91,19 @@ public class syntacticAnalyzer {
         if (instructionConverted == null) {
             return;
         }
+
+        this.insertTokenMissingIntoSymbolsTable(instructionConverted);
+
         this.insertValuesIntoSyntacticTree(ruleActivate, instructionConverted);
 
+    }
+
+    public void insertTokenMissingIntoSymbolsTable(String[] instructionConverted) {
+        final int positionMissingToken = 2;
+        if (positionMissingToken < instructionConverted.length
+                && !this.symbolsTable.contains(instructionConverted[positionMissingToken])) {
+            this.symbolsTable.add(instructionConverted[positionMissingToken]);
+        }
     }
 
     public String[] getInstructionConverted(String[] ruleActivated, String[] struction) {
@@ -109,20 +120,20 @@ public class syntacticAnalyzer {
 
                             String size = struction[i + 1];
                             String base = struction[i + 2];
-                            if (isValidType("inteiro", size)) {
+                            if (isValidType("tamanho", size)) {
                                 sizeAndExtension += struction[i + 1];
                             } else {
-                                String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                String nonFinalWord = getNonFinalWordMissing("tamanho");
                                 if (nonFinalWord == "") {
                                     return null;
                                 }
                                 sizeAndExtension += nonFinalWord;
                             }
 
-                            if (isValidType("palavra", base)) {
+                            if (isValidType("unidade", base)) {
                                 sizeAndExtension += struction[i + 2];
                             } else {
-                                String nonFinalWord = getNonFinalWordMissing("palavra");
+                                String nonFinalWord = getNonFinalWordMissing("unidade");
                                 if (nonFinalWord == "") {
                                     return null;
                                 }
@@ -131,27 +142,27 @@ public class syntacticAnalyzer {
                         } else {
                             if (i + 2 >= struction.length) {
 
-                                String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                String nonFinalWord = getNonFinalWordMissing("tamanho");
                                 if (nonFinalWord == "") {
                                     return null;
                                 }
                                 sizeAndExtension += nonFinalWord;
 
-                                nonFinalWord = getNonFinalWordMissing("palavra");
+                                nonFinalWord = getNonFinalWordMissing("unidade");
                                 if (nonFinalWord == "") {
                                     return null;
                                 }
                                 sizeAndExtension += nonFinalWord;
                             } else if (i + 1 < struction.length) {
-                                if (isValidType("palavra", struction[i + 1])) {// has base
-                                    String nonFinalWord = getNonFinalWordMissing("palavra");
+                                if (isValidType("unidade", struction[i + 1])) {
+                                    String nonFinalWord = getNonFinalWordMissing("unidade");
                                     if (nonFinalWord == "") {
                                         return null;
                                     }
                                     sizeAndExtension += nonFinalWord;
                                     sizeAndExtension += struction[i + 1];
-                                } else if (isValidType("inteiro", struction[i + 1])) {// has value
-                                    String nonFinalWord = getNonFinalWordMissing("inteiro");
+                                } else if (isValidType("inteiro", struction[i + 1])) {
+                                    String nonFinalWord = getNonFinalWordMissing("tamanho");
                                     if (nonFinalWord == "") {
                                         return null;
                                     }
@@ -213,6 +224,7 @@ public class syntacticAnalyzer {
         }
 
         this.source.print("");
+        System.out.println(this.symbolsTable.toString());
     }
 
     public String getNonFinalWordMissing(String type) {
@@ -328,19 +340,6 @@ public class syntacticAnalyzer {
         return "";
     }
 
-    public boolean isUnitValid(String unit) {
-        if (unit.equalsIgnoreCase("kb")) {
-            return true;
-        } else if (unit.equalsIgnoreCase("mb")) {
-            return true;
-        } else if (unit.equalsIgnoreCase("gb")) {
-            return true;
-        } else if (unit.equalsIgnoreCase("b")) {
-            return true;
-        }
-        return false;
-    }
-
     private boolean isValidType(String type, String value) {
         switch (type) {
             case "palavra":
@@ -353,6 +352,16 @@ public class syntacticAnalyzer {
                 return value.matches("(pdf|docx|doc|txt|xml|json|xls)");
             case "letra":
                 return value.matches("[a-zA-Z]");
+            case "titulo":
+                return value.matches("[a-zA-Z]+");
+            case "pasta":
+                return value.matches("[a-zA-Z0-9]+");
+            case "ano":
+                return value.matches("\\d+");
+            case "tamanho":
+                return value.matches("\\d+");
+            case "unidade":
+                return value.toLowerCase().matches("(mb|kb|gb|b)");
             default:
                 return false;
         }
