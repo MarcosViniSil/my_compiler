@@ -13,10 +13,10 @@ public class LexicalAnalyzer {
     public LexicalAnalyzer() {
     }
 
-    public void lexicalVerification(String instruction) {
+    public Queue<String> lexicalVerification(String instruction) {
 
         if (instruction.replaceAll(" ", "") == "") {
-            return;
+            return null;
         }
         String instructionAux = instruction.replace(" ", "");
 
@@ -31,6 +31,9 @@ public class LexicalAnalyzer {
 
         this.insertWordsIntoSymbolsTable(instruction);
         this.insertTokensIntoTokensQueue(instruction);
+        Queue<String> result = new LinkedList<>(this.tokensQueue);
+        this.tokensQueue.clear();
+        return result;
 
     }
 

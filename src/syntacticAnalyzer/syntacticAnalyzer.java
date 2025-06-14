@@ -47,11 +47,11 @@ public class syntacticAnalyzer {
     public syntacticAnalyzer(Queue<String> tokensQueue, ArrayList<String> symbolsTable) {
         this.tokensQueue = tokensQueue;
         this.symbolsTable = symbolsTable;
-        this.source = new SyntacticTree("Inicio-arvore");
+        this.source = new SyntacticTree("Programa");
     }
 
-    public void execute() {
-        String[] tokens = this.tokensQueue.toString()
+    public void execute(Queue<String> tokensQueue) {
+        String[] tokens = tokensQueue.toString()
                 .replace("[", "")
                 .replace("]", "")
                 .replace("?", "")
@@ -211,20 +211,20 @@ public class syntacticAnalyzer {
     }
 
     public void insertValuesIntoSyntacticTree(String[] ruleStructure, String[] ruleConverted) {
+        SyntacticTree instruction = new SyntacticTree("Instruction");
+
         for (int i = 0; i < ruleStructure.length; i++) {
             if (ruleStructure[i].startsWith("<") && ruleStructure[i].endsWith(">")) {
                 SyntacticTree nonTerminal = new SyntacticTree(ruleStructure[i]);
                 nonTerminal.addChild(new SyntacticTree(ruleConverted[i]));
-                this.source.addChild(nonTerminal);
+                instruction.addChild(nonTerminal);
             } else {
-                String part = ruleStructure[i];
-                this.source.addChild(new SyntacticTree(part));
+                instruction.addChild(new SyntacticTree(ruleStructure[i]));
             }
-
         }
 
+        this.source.addChild(instruction);
         this.source.print("");
-        System.out.println(this.symbolsTable.toString());
     }
 
     public String getNonFinalWordMissing(String type) {
