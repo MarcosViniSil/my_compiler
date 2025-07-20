@@ -30,6 +30,7 @@ public class LexicalAnalyzer {
         }
 
         this.insertWordsIntoSymbolsTable(instruction);
+
         this.insertTokensIntoTokensQueue(instruction);
         Queue<String> result = new LinkedList<>(this.tokensQueue);
         this.tokensQueue.clear();

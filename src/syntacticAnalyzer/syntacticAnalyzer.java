@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
+import translator.*;
 
 public class syntacticAnalyzer {
 
@@ -96,6 +97,10 @@ public class syntacticAnalyzer {
 
         this.insertValuesIntoSyntacticTree(ruleActivate, instructionConverted);
 
+        translatorC.translate(this.source);
+
+        this.cleanSyntaticTree();
+
     }
 
     public void insertTokenMissingIntoSymbolsTable(String[] instructionConverted) {
@@ -180,7 +185,7 @@ public class syntacticAnalyzer {
             else {
                 String triggerNonStopWord = ruleActivated[1];
                 for (int i = 0; i < struction.length; i++) {
-                    if (struction[i].equalsIgnoreCase(triggerNonStopWord)) {
+                    if (LexicalAnalyzer.similarityWithDifferenceTwoCharacters(struction[i], triggerNonStopWord)) {
                         String type = ruleActivated[2].replace("<", "").replace(">", "");
                         if (i + 1 < struction.length) {
                             if (isValidType(type, struction[i + 1])) {
@@ -224,7 +229,6 @@ public class syntacticAnalyzer {
         }
 
         this.source.addChild(instruction);
-        this.source.print("");
     }
 
     public String getNonFinalWordMissing(String type) {
@@ -424,6 +428,14 @@ public class syntacticAnalyzer {
         }
 
         return " ";
+    }
+
+    public SyntacticTree getSyntaticTree(){
+        return source;
+    }
+
+    public void cleanSyntaticTree(){
+        this.source = new SyntacticTree("Programa");
     }
 
 }

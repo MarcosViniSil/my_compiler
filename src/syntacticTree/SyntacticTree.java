@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class SyntacticTree {
-    String label;
-    List<SyntacticTree> children;
+    public String label;
+    public List<SyntacticTree> children;
 
     public SyntacticTree(String label) {
         this.label = label;
@@ -21,5 +21,19 @@ public class SyntacticTree {
         for (SyntacticTree child : children) {
             child.print(prefix + "  ");
         }
+    }
+
+    public String getSecondWord() {
+        if (this.children.size() >= 2) {
+            return this.children.get(1).label;
+        }
+        return null;
+    }
+
+    public String getLastLeaf() {
+        if (this.children.isEmpty()) {
+            return this.label; 
+        }
+        return this.children.get(this.children.size() - 1).getLastLeaf();
     }
 }
